@@ -551,6 +551,7 @@ pub enum Conv {
     // should have its own backend (e.g. LLVM) support.
     C,
     Rust,
+    PreserveAll,
 
     // Target-specific calling conventions.
     ArmAapcs,

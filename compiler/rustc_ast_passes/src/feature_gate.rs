@@ -204,6 +204,14 @@ impl<'a> PostExpansionVisitor<'a> {
                     "wasm ABI is experimental and subject to change"
                 );
             }
+            "preserve-all" => {
+                gate_feature_post!(
+                    &self,
+                    abi_preserve_all,
+                    span,
+                    "preserve-all ABI is experimental and subject to change"
+                );
+            }
             abi => self
                 .sess
                 .parse_sess

@@ -1494,7 +1494,8 @@ impl Target {
             | PlatformIntrinsic
             | Unadjusted
             | Cdecl
-            | EfiApi => true,
+            | EfiApi
+            | PreserveAll => true,
             X86Interrupt => ["x86", "x86_64"].contains(&&self.arch[..]),
             Aapcs | CCmseNonSecureCall => ["arm", "aarch64"].contains(&&self.arch[..]),
             Win64 | SysV64 => self.arch == "x86_64",

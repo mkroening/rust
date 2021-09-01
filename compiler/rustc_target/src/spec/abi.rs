@@ -35,6 +35,7 @@ pub enum Abi {
     RustCall,
     PlatformIntrinsic,
     Unadjusted,
+    PreserveAll,
 }
 
 #[derive(Copy, Clone)]
@@ -75,6 +76,7 @@ const AbiDatas: &[AbiData] = &[
     AbiData { abi: Abi::RustCall, name: "rust-call" },
     AbiData { abi: Abi::PlatformIntrinsic, name: "platform-intrinsic" },
     AbiData { abi: Abi::Unadjusted, name: "unadjusted" },
+    AbiData { abi: Abi::PreserveAll, name: "preserve-all" },
 ];
 
 /// Returns the ABI with the given name (if any).
@@ -124,6 +126,7 @@ impl Abi {
             RustCall => 25,
             PlatformIntrinsic => 26,
             Unadjusted => 27,
+            PreserveAll => 28,
         };
         debug_assert!(
             AbiDatas

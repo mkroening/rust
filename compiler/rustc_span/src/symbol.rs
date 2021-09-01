@@ -253,6 +253,7 @@ symbols! {
         abi_c_cmse_nonsecure_call,
         abi_efiapi,
         abi_msp430_interrupt,
+        abi_preserve_all,
         abi_ptx,
         abi_sysv64,
         abi_thiscall,

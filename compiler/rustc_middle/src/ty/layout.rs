@@ -2717,7 +2717,7 @@ pub fn fn_can_unwind(
         | RustIntrinsic
         | PlatformIntrinsic
         | Unadjusted => false,
-        Rust | RustCall => tcx.sess.panic_strategy() == PanicStrategy::Unwind,
+        Rust | RustCall | PreserveAll => tcx.sess.panic_strategy() == PanicStrategy::Unwind,
     }
 }
 
@@ -2736,6 +2736,7 @@ pub fn conv_from_spec_abi(tcx: TyCtxt<'_>, abi: SpecAbi) -> Conv {
         Thiscall { .. } => Conv::X86ThisCall,
         C { .. } => Conv::C,
         Unadjusted => Conv::C,
+        PreserveAll => Conv::PreserveAll,
         Win64 => Conv::X86_64Win64,
         SysV64 => Conv::X86_64SysV,
         Aapcs => Conv::ArmAapcs,

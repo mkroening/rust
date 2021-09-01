@@ -685,6 +685,9 @@ declare_features! (
     /// Allows explicit generic arguments specification with `impl Trait` present.
     (active, explicit_generic_args_with_impl_trait, "1.56.0", Some(83701), None),
 
+    /// Allows `extern "x86-interrupt" fn()`.
+    (active, abi_preserve_all, "1.56.0", Some(999999), None),
+
     // -------------------------------------------------------------------------
     // feature-group-end: actual feature gates
     // -------------------------------------------------------------------------
