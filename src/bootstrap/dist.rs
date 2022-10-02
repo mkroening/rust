@@ -22,6 +22,7 @@ use crate::builder::{Builder, Kind, RunConfig, ShouldRun, Step};
 use crate::cache::{Interned, INTERNER};
 use crate::channel;
 use crate::compile;
+use crate::config::Target;
 use crate::config::TargetSelection;
 use crate::doc::DocumentationFormat;
 use crate::tarball::{GeneratedTarball, OverlayKind, Tarball};
@@ -1890,20 +1891,29 @@ fn add_env(builder: &Builder<'_>, cmd: &mut Command, target: TargetSelection) {
 ///
 /// Returns whether the files were actually copied.
 fn maybe_install_llvm(builder: &Builder<'_>, target: TargetSelection, dst_libdir: &Path) -> bool {
-    if !builder.is_rust_llvm(target) {
-        // If the LLVM was externally provided, then we don't currently copy
-        // artifacts into the sysroot. This is not necessarily the right
-        // choice (in particular, it will require the LLVM dylib to be in
-        // the linker's load path at runtime), but the common use case for
-        // external LLVMs is distribution provided LLVMs, and in that case
-        // they're usually in the standard search path (e.g., /usr/lib) and
-        // copying them here is going to cause problems as we may end up
-        // with the wrong files and isn't what distributions want.
-        //
-        // This behavior may be revisited in the future though.
-        //
+    // If the LLVM was externally provided, then we don't currently copy
+    // artifacts into the sysroot. This is not necessarily the right
+    // choice (in particular, it will require the LLVM dylib to be in
+    // the linker's load path at runtime), but the common use case for
+    // external LLVMs is distribution provided LLVMs, and in that case
+    // they're usually in the standard search path (e.g., /usr/lib) and
+    // copying them here is going to cause problems as we may end up
+    // with the wrong files and isn't what distributions want.
+    //
+    // This behavior may be revisited in the future though.
+    //
+    // NOTE: this intentionally doesn't use `is_rust_llvm`; whether this is patched or not doesn't matter,
+    // we only care if the shared object itself is managed by bootstrap.
+    let should_install_llvm = match builder.config.target_config.get(&target) {
         // If the LLVM is coming from ourselves (just from CI) though, we
         // still want to install it, as it otherwise won't be available.
+        Some(Target { llvm_config: Some(_), .. }) => {
+            builder.config.llvm_from_ci && target == builder.config.build
+        }
+        Some(Target { llvm_config: None, .. }) | None => true,
+    };
+
+    if !should_install_llvm {
         return false;
     }
 

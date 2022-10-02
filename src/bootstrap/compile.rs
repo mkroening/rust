@@ -312,12 +312,17 @@ pub fn std_cargo(builder: &Builder<'_>, target: TargetSelection, stage: u32, car
     let compiler_builtins_c_feature = if builder.config.optimized_compiler_builtins {
         if !builder.is_rust_llvm(target) {
             panic!(
-                "need a managed LLVM submodule for optimized intrinsics support; unset `llvm-config` or `optimized-compiler-builtins`"
+                "LLVM must have the Rust project's patched sources to support using it for `compiler-builtins`; unset `llvm-config` or `optimized-compiler-builtins`"
             );
         }
 
         builder.update_submodule(&Path::new("src").join("llvm-project"));
         let compiler_builtins_root = builder.src.join("src/llvm-project/compiler-rt");
+        if !compiler_builtins_root.exists() {
+            panic!(
+                "needed LLVM sources available to build `compiler-rt`, but they weren't present; consider enabling `build.submodules = true`"
+            );
+        }
         // Note that `libprofiler_builtins/build.rs` also computes this so if
         // you're changing something here please also change that.
         cargo.env("RUST_COMPILER_RT_ROOT", &compiler_builtins_root);
