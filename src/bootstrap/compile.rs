@@ -310,17 +310,15 @@ pub fn std_cargo(builder: &Builder<'_>, target: TargetSelection, stage: u32, car
     // `compiler-builtins` crate is enabled and it's configured to learn where
     // `compiler-rt` is located.
     let compiler_builtins_c_feature = if builder.config.optimized_compiler_builtins {
-        if !builder.is_rust_llvm(target) {
-            panic!(
-                "LLVM must have the Rust project's patched sources to support using it for `compiler-builtins`; unset `llvm-config` or `optimized-compiler-builtins`"
-            );
-        }
-
+        // NOTE: this interacts strangely with `llvm-has-rust-patches`. In that case, we enforce `submodules = false`, so this is a no-op.
+        // But, the user could still decide to manually use an in-tree submodule.
+        //
+        // Using system llvm is not supported.
         builder.update_submodule(&Path::new("src").join("llvm-project"));
         let compiler_builtins_root = builder.src.join("src/llvm-project/compiler-rt");
-        if !compiler_builtins_root.exists() {
+        if !compiler_builtins_root.exists() || builder.is_system_llvm(target) {
             panic!(
-                "needed LLVM sources available to build `compiler-rt`, but they weren't present; consider enabling `build.submodules = true`"
+                "needed LLVM sources available to build `compiler-rt`, but they weren't present; consider enabling `build.submodules = true`, disabling `optimized-compiler-builtins`, or unsetting `llvm-config`"
             );
         }
         // Note that `libprofiler_builtins/build.rs` also computes this so if

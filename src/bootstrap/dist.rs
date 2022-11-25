@@ -22,7 +22,6 @@ use crate::builder::{Builder, Kind, RunConfig, ShouldRun, Step};
 use crate::cache::{Interned, INTERNER};
 use crate::channel;
 use crate::compile;
-use crate::config::Target;
 use crate::config::TargetSelection;
 use crate::doc::DocumentationFormat;
 use crate::tarball::{GeneratedTarball, OverlayKind, Tarball};
@@ -1904,16 +1903,10 @@ fn maybe_install_llvm(builder: &Builder<'_>, target: TargetSelection, dst_libdir
     //
     // NOTE: this intentionally doesn't use `is_rust_llvm`; whether this is patched or not doesn't matter,
     // we only care if the shared object itself is managed by bootstrap.
-    let should_install_llvm = match builder.config.target_config.get(&target) {
-        // If the LLVM is coming from ourselves (just from CI) though, we
-        // still want to install it, as it otherwise won't be available.
-        Some(Target { llvm_config: Some(_), .. }) => {
-            builder.config.llvm_from_ci && target == builder.config.build
-        }
-        Some(Target { llvm_config: None, .. }) | None => true,
-    };
-
-    if !should_install_llvm {
+    //
+    // If the LLVM is coming from ourselves (just from CI) though, we
+    // still want to install it, as it otherwise won't be available.
+    if builder.is_system_llvm(target) {
         return false;
     }
 

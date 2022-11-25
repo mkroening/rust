@@ -877,12 +877,27 @@ impl Build {
         INTERNER.intern_path(self.out.join(&*target.triple).join("md-doc"))
     }
 
+    /// Returns `true` if this is an external version of LLVM not managed by bootstrap.
+    /// In particular, we expect llvm sources to be available when this is false.
+    ///
+    /// NOTE: this is not the same as `!is_rust_llvm` when `llvm_has_patches` is set.
+    fn is_system_llvm(&self, target: TargetSelection) -> bool {
+        match self.config.target_config.get(&target) {
+            Some(Target { llvm_config: Some(_), .. }) => {
+                !self.config.llvm_from_ci || target != self.config.build
+            }
+            Some(Target { llvm_config: None, .. }) | None => false,
+        }
+    }
+
     /// Returns `true` if this is our custom, patched, version of LLVM.
     ///
     /// This does not necessarily imply that we're managing the `llvm-project` submodule.
     fn is_rust_llvm(&self, target: TargetSelection) -> bool {
         match self.config.target_config.get(&target) {
-            // We're using a pre-built version of LLVM, but the user has promised that pre-built version has our patches.
+            // We're using a user-controlled version of LLVM. The user has explicitly told us whether the version has our patches.
+            // (They might be wrong, but that's not a supported use-case.)
+            // In particular, this tries to support `submodules = false` and `patches = false`, for using a newer version of LLVM that's not through `rust-lang/llvm-project`.
             Some(Target { llvm_has_rust_patches: Some(patched), .. }) => *patched,
             // We're using pre-built LLVM and the user hasn't promised the patches match.
             // This only has our patches if it's our managed, CI-built LLVM.

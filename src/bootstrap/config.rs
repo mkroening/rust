@@ -1229,7 +1229,10 @@ impl Config {
                     target.llvm_config = Some(config.src.join(s));
                 }
                 if let Some(patches) = cfg.llvm_has_rust_patches {
-                    assert!(config.submodules.is_some(), "cannot set `llvm-hash-rust-patches` for a managed submodule");
+                    assert!(
+                        config.submodules.is_some(),
+                        "cannot set `llvm-has-rust-patches` for a managed submodule"
+                    );
                     target.llvm_has_rust_patches = Some(patches);
                 }
                 if let Some(ref s) = cfg.llvm_filecheck {
